@@ -1,0 +1,1864 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#6366f1">
+    <title>TaskFlow - Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #5558e3;
+            --primary-light: rgba(99, 102, 241, 0.15);
+            --primary-glow: rgba(99, 102, 241, 0.3);
+            --success: #10b981;
+            --success-light: rgba(16, 185, 129, 0.15);
+            --warning: #f59e0b;
+            --warning-light: rgba(245, 158, 11, 0.15);
+            --danger: #ef4444;
+            --danger-light: rgba(239, 68, 68, 0.15);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --radius-lg: 16px;
+            --shadow: 0 4px 24px rgba(0,0,0,0.12);
+            --shadow-lg: 0 20px 50px rgba(0,0,0,0.25);
+            --transition: all 0.2s ease;
+        }
+
+        [data-theme="dark"] {
+            --bg: #09090b;
+            --bg-secondary: #111114;
+            --bg-tertiary: #18181b;
+            --bg-elevated: #1f1f23;
+            --text: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border: #27272a;
+            --border-light: #3f3f46;
+        }
+
+        [data-theme="light"] {
+            --bg: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --bg-elevated: #ffffff;
+            --text: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --border-light: #cbd5e1;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        .loading-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            gap: 16px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-screen p { color: var(--text-secondary); font-size: 14px; }
+
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 16px; }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            font-size: 13px;
+        }
+
+        .header-right { display: flex; gap: 8px; align-items: center; }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--bg-tertiary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            color: var(--text-secondary);
+        }
+
+        .icon-btn:hover { border-color: var(--border-light); color: var(--text); background: var(--bg-elevated); }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-menu-dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 48px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            min-width: 200px;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .dropdown-content.active { display: block; }
+
+        .dropdown-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dropdown-header p { font-size: 14px; color: var(--text-secondary); }
+        .dropdown-header strong { font-size: 14px; }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text);
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .dropdown-item:hover { background: var(--bg-tertiary); }
+        .dropdown-item.danger { color: var(--danger); }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            color: white;
+        }
+
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px var(--primary-glow); }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover { background: var(--bg-elevated); border-color: var(--border-light); }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 8px 12px;
+        }
+
+        .btn-ghost:hover { background: var(--bg-tertiary); color: var(--text); }
+
+        .btn-sm { padding: 6px 12px; font-size: 13px; }
+
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+        /* Main Content */
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+        /* Quick Add */
+        .quick-add {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .quick-add-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-tertiary);
+            color: var(--text);
+            font-size: 15px;
+            font-family: inherit;
+        }
+
+        .quick-add-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .quick-add-input::placeholder { color: var(--text-muted); }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+
+        .stat-label { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+        .stat-value { font-size: 28px; font-weight: 700; }
+        .stat-value.primary { color: var(--primary); }
+        .stat-value.success { color: var(--success); }
+        .stat-value.warning { color: var(--warning); }
+
+        /* Section Header */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .section-title { font-size: 18px; font-weight: 600; }
+        .section-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            background: var(--bg-secondary);
+            padding: 8px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .filter-btn {
+            padding: 8px 14px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+
+        .filter-btn:hover { color: var(--text); background: var(--bg-tertiary); }
+        .filter-btn.active { background: var(--primary); color: white; }
+
+        /* Task List */
+        .task-list { display: flex; flex-direction: column; gap: 8px; }
+
+        .task-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            transition: var(--transition);
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .task-card:hover { border-color: var(--border-light); }
+        .task-card.completed { opacity: 0.6; }
+        .task-card.completed .task-title { text-decoration: line-through; color: var(--text-muted); }
+
+        .task-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            flex-shrink: 0;
+            margin-top: 2px;
+            color: white;
+        }
+
+        .task-checkbox:hover { border-color: var(--primary); }
+        .task-checkbox.checked { background: var(--success); border-color: var(--success); }
+
+        .task-content { flex: 1; min-width: 0; }
+        .task-title { font-weight: 600; font-size: 15px; margin-bottom: 6px; }
+        .task-description { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+        .task-meta { display: flex; flex-wrap: wrap; gap: 6px; }
+
+        .task-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+
+        .task-tag.priority-high { background: var(--danger-light); color: var(--danger); }
+        .task-tag.priority-medium { background: var(--warning-light); color: var(--warning); }
+        .task-tag.priority-low { background: var(--success-light); color: var(--success); }
+        .task-tag.category { background: var(--primary-light); color: var(--primary); }
+
+        .task-actions { display: flex; gap: 4px; }
+
+        .task-action {
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            color: var(--text-muted);
+        }
+
+        .task-action:hover { background: var(--bg-tertiary); color: var(--text); }
+        .task-action.delete:hover { background: var(--danger-light); color: var(--danger); }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--bg-secondary);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+        }
+
+        .empty-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--bg-tertiary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: var(--text-muted);
+        }
+
+        .empty-state h3 { font-size: 16px; margin-bottom: 8px; }
+        .empty-state p { color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: modalIn 0.2s ease;
+        }
+
+        .modal.modal-lg { max-width: 700px; }
+        .modal.modal-xl { max-width: 900px; }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.96) translateY(-10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title { font-size: 18px; font-weight: 600; }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .modal-close:hover { background: var(--bg-elevated); color: var(--text); }
+
+        .modal-body { padding: 24px; }
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        /* Form */
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--text-secondary); }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-tertiary);
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        textarea.form-input { resize: vertical; min-height: 70px; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+        @media (max-width: 500px) { 
+            .form-row, .form-row-3 { grid-template-columns: 1fr; } 
+        }
+
+        .form-hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-tertiary);
+            padding: 4px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+
+        .tab:hover { color: var(--text); }
+        .tab.active { background: var(--bg-secondary); color: var(--text); box-shadow: var(--shadow); }
+
+        /* Schedule Builder */
+        .schedule-builder { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        @media (max-width: 700px) { .schedule-builder { grid-template-columns: 1fr; } }
+
+        .schedule-tasks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .schedule-task-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .schedule-task-item:hover { border-color: var(--border); }
+        .schedule-task-item.selected { border-color: var(--primary); background: var(--primary-light); }
+        .schedule-task-item input { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
+
+        .schedule-task-info { flex: 1; }
+        .schedule-task-name { font-weight: 500; font-size: 14px; }
+        .schedule-task-meta { font-size: 12px; color: var(--text-muted); }
+
+        .schedule-config { display: flex; flex-direction: column; gap: 16px; }
+
+        /* Generated Schedule */
+        .schedule-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            position: relative;
+            margin-top: 16px;
+        }
+
+        .schedule-block {
+            display: grid;
+            grid-template-columns: 70px 1fr auto;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
+
+        .schedule-block:last-child { border-bottom: none; }
+
+        .schedule-block-time {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .schedule-block-time input {
+            width: 65px;
+            padding: 4px 6px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--bg-tertiary);
+            color: var(--text);
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .schedule-block-time input:focus { border-color: var(--primary); outline: none; }
+
+        .schedule-block-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .schedule-block-title { font-weight: 500; font-size: 14px; }
+        .schedule-block-duration { font-size: 12px; color: var(--text-muted); }
+        .schedule-block-tip { font-size: 12px; color: var(--primary); font-style: italic; margin-top: 2px; }
+
+        .schedule-block.break { background: var(--success-light); margin: 0 -12px; padding: 12px; border-radius: var(--radius-sm); border: none; }
+        .schedule-block.break .schedule-block-title { color: var(--success); }
+
+        .schedule-block-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+
+        .schedule-block.break .schedule-block-indicator { background: var(--success); }
+
+        .schedule-summary-bar {
+            display: flex;
+            gap: 16px;
+            padding: 16px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            margin-top: 16px;
+        }
+
+        .schedule-summary-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .schedule-summary-item span { font-size: 12px; color: var(--text-muted); }
+        .schedule-summary-item strong { font-size: 16px; }
+
+        /* Settings */
+        .settings-section { margin-bottom: 24px; }
+        .settings-section h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text-secondary); }
+
+        .category-list { display: flex; flex-direction: column; gap: 8px; }
+
+        .category-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+        }
+
+        .category-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+        }
+
+        .category-name { flex: 1; font-size: 14px; }
+
+        .category-default {
+            font-size: 11px;
+            padding: 2px 8px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 4px;
+        }
+
+        .add-category-form {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .add-category-form input { flex: 1; }
+
+        .color-picker {
+            width: 40px;
+            height: 38px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            padding: 14px 18px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            animation: toastIn 0.3s ease;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast.error { border-color: var(--danger); background: var(--danger-light); }
+        .toast.success { border-color: var(--success); background: var(--success-light); }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .hidden { display: none !important; }
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @media (max-width: 640px) {
+            .header { padding: 12px 16px; }
+            .main-content { padding: 16px; }
+            .quick-add { flex-direction: column; }
+            .section-header { flex-direction: column; align-items: stretch; }
+            .section-actions { justify-content: space-between; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-spinner"></div>
+        <p>Loading TaskFlow...</p>
+    </div>
+
+    <header class="header">
+        <div class="header-left">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">TF</div>
+                TaskFlow
+            </a>
+        </div>
+        <div class="header-right">
+            <button class="icon-btn" id="themeToggle" title="Toggle theme">
+                <svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
+            <button class="icon-btn" id="settingsBtn" title="Settings">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                </svg>
+            </button>
+            <div class="user-menu-dropdown">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <div class="dropdown-content" id="userDropdown">
+                    <div class="dropdown-header">
+                        <strong id="userName">User</strong>
+                        <p id="userEmail">user@email.com</p>
+                    </div>
+                    <button class="dropdown-item danger" id="logoutBtn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"></path>
+                        </svg>
+                        Sign Out
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Quick Add -->
+        <div class="quick-add">
+            <input type="text" class="quick-add-input" id="quickAddInput" placeholder="Quick add a task... (press Enter)">
+            <button class="btn btn-primary" id="quickAddBtn">Add</button>
+            <button class="btn btn-secondary" id="fullAddBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+                Details
+            </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Tasks</div>
+                <div class="stat-value primary" id="statTotal">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Pending</div>
+                <div class="stat-value warning" id="statPending">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Completed</div>
+                <div class="stat-value success" id="statCompleted">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Time Required</div>
+                <div class="stat-value" id="statTime">0h</div>
+            </div>
+        </div>
+
+        <!-- Section Header -->
+        <div class="section-header">
+            <h2 class="section-title">Tasks</h2>
+            <div class="section-actions">
+                <button class="btn btn-secondary" id="aiScheduleBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    Plan My Day
+                </button>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="pending">Pending</button>
+            <button class="filter-btn" data-filter="completed">Completed</button>
+            <button class="filter-btn" data-filter="today">Today</button>
+            <button class="filter-btn" data-filter="high">High Priority</button>
+        </div>
+
+        <!-- Task List -->
+        <div class="task-list" id="taskList"></div>
+    </main>
+
+    <!-- Task Modal -->
+    <div class="modal-overlay" id="taskModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="taskModalTitle">Add Task</h3>
+                <button class="modal-close" onclick="closeModal('taskModal')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="taskForm">
+                    <input type="hidden" id="taskId">
+                    <div class="form-group">
+                        <label>What needs to be done?</label>
+                        <input type="text" class="form-input" id="taskTitle" placeholder="Task title" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes (optional)</label>
+                        <textarea class="form-input" id="taskDescription" placeholder="Add any details..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Due Date</label>
+                            <input type="date" class="form-input" id="taskDueDate">
+                        </div>
+                        <div class="form-group">
+                            <label>Due Time</label>
+                            <input type="time" class="form-input" id="taskDueTime">
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>Duration</label>
+                            <select class="form-input" id="taskDuration">
+                                <option value="15">15 min</option>
+                                <option value="30" selected>30 min</option>
+                                <option value="45">45 min</option>
+                                <option value="60">1 hour</option>
+                                <option value="90">1.5 hours</option>
+                                <option value="120">2 hours</option>
+                                <option value="180">3 hours</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Priority</label>
+                            <select class="form-input" id="taskPriority">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select class="form-input" id="taskCategory"></select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Where? (location/context)</label>
+                        <input type="text" class="form-input" id="taskLocation" placeholder="e.g., Home, Office, Library, Online">
+                        <div class="form-hint">Where will you complete this task?</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('taskModal')">Cancel</button>
+                <button class="btn btn-primary" id="saveTaskBtn">Save Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Modal -->
+    <div class="modal-overlay" id="scheduleModal">
+        <div class="modal modal-xl">
+            <div class="modal-header">
+                <h3 class="modal-title">Plan My Day</h3>
+                <button class="modal-close" onclick="closeModal('scheduleModal')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="tabs">
+                    <button class="tab active" data-tab="setup">1. Select Tasks</button>
+                    <button class="tab" data-tab="preview">2. Your Schedule</button>
+                </div>
+
+                <!-- Setup Tab -->
+                <div id="setupTab">
+                    <div class="schedule-builder">
+                        <div>
+                            <h4 style="margin-bottom: 12px; font-size: 14px;">Select tasks to schedule:</h4>
+                            <div class="schedule-tasks-list" id="scheduleTaskSelect"></div>
+                        </div>
+                        <div class="schedule-config">
+                            <div class="form-group">
+                                <label>Working hours</label>
+                                <div class="form-row">
+                                    <input type="time" class="form-input" id="scheduleStart" value="09:00">
+                                    <input type="time" class="form-input" id="scheduleEnd" value="17:00">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Work style</label>
+                                <select class="form-input" id="workStyle">
+                                    <option value="pomodoro">Pomodoro (25 min work, 5 min break)</option>
+                                    <option value="deep">Deep Focus (50 min work, 10 min break)</option>
+                                    <option value="sprint">Sprint (90 min work, 20 min break)</option>
+                                    <option value="flexible">Flexible (AI decides)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>How are you feeling?</label>
+                                <select class="form-input" id="energyLevel">
+                                    <option value="high">High energy - ready to tackle hard tasks</option>
+                                    <option value="medium" selected>Normal - balanced approach</option>
+                                    <option value="low">Low energy - ease into work</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Keep buffer time (minutes)</label>
+                                <input type="number" class="form-input" id="freeTime" value="30" min="0">
+                                <div class="form-hint">Time reserved for unexpected tasks</div>
+                            </div>
+                            <button class="btn btn-primary" id="generateScheduleBtn" style="width: 100%;">
+                                Generate My Schedule
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview Tab -->
+                <div id="previewTab" class="hidden">
+                    <p style="margin-bottom: 16px; color: var(--text-secondary);">Adjust times by clicking on them. Your schedule is optimized for productivity.</p>
+                    <div class="schedule-timeline" id="scheduleResult"></div>
+                    <div class="schedule-summary-bar" id="scheduleSummary"></div>
+                    <div style="margin-top: 16px; padding: 16px; background: var(--bg-tertiary); border-radius: var(--radius-sm);">
+                        <h4 style="font-size: 14px; margin-bottom: 8px;">AI Tips</h4>
+                        <ul id="scheduleTips" style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-secondary);"></ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('scheduleModal')">Close</button>
+                <button class="btn btn-secondary hidden" id="backToSetupBtn">Back to Setup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Settings</h3>
+                <button class="modal-close" onclick="closeModal('settingsModal')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h3>Categories</h3>
+                    <div class="category-list" id="categoryList"></div>
+                    <div class="add-category-form">
+                        <input type="text" class="form-input" id="newCategoryName" placeholder="New category name">
+                        <input type="color" class="color-picker" id="newCategoryColor" value="#6366f1">
+                        <button class="btn btn-primary btn-sm" id="addCategoryBtn">Add</button>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Default Task Duration</h3>
+                    <select class="form-input" id="defaultDuration">
+                        <option value="15">15 minutes</option>
+                        <option value="30" selected>30 minutes</option>
+                        <option value="45">45 minutes</option>
+                        <option value="60">1 hour</option>
+                    </select>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Default Working Hours</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Start</label>
+                            <input type="time" class="form-input" id="defaultStartTime" value="09:00">
+                        </div>
+                        <div class="form-group">
+                            <label>End</label>
+                            <input type="time" class="form-input" id="defaultEndTime" value="17:00">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>AI / Gemini Configuration</h3>
+                    <div class="form-group">
+                        <label>Gemini API Key</label>
+                        <input type="text" class="form-input" id="geminiKeyInput" placeholder="Paste your API key here">
+                        <div class="form-hint">Get a key from <a href="https://aistudio.google.com" target="_blank">Google AI Studio</a> and make sure it has Generative Language permission.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+<script>
+    // ============================================
+    // CONFIGURATION - EDIT THESE VALUES
+    // ============================================
+    var SUPABASE_URL = 'https://lbbayixblmmachvddqdn.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxiYmF5aXhibG1tYWNodmRkcWRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0MjI0MTIsImV4cCI6MjA4Nzk5ODQxMn0.NCvXBC2PXqJepKAuI3aiXq9CcHC2FdQrEyQfw9tZbZs';
+    // Gemini key is stored in localStorage so it isn't committed to source control.
+    var GEMINI_API_KEY = localStorage.getItem('geminiApiKey') || '';
+    // ============================================
+
+    // Models to try in order of preference (most capable first)
+    var GEMINI_MODELS = [
+'gemini-3-flash'
+    ];
+
+    var supabaseClient = null;
+    var currentUser = null;
+    var tasks = [];
+    var currentFilter = 'all';
+    var generatedSchedule = null;
+    var workingModel = null; // Will store the model that works
+
+    // Default categories
+    var categories = [
+        { id: 'work', name: 'Work', color: '#6366f1', default: true },
+        { id: 'personal', name: 'Personal', color: '#10b981', default: true },
+        { id: 'study', name: 'Study', color: '#f59e0b', default: true },
+        { id: 'health', name: 'Health', color: '#ef4444', default: true },
+        { id: 'other', name: 'Other', color: '#71717a', default: true }
+    ];
+
+    var settings = {
+        defaultDuration: 30,
+        defaultStartTime: '09:00',
+        defaultEndTime: '17:00'
+    };
+
+    window.onload = function() {
+        loadSettings();
+        setupTheme();
+        if (!GEMINI_API_KEY) {
+            // notify user that they need to provide a key
+            setTimeout(function() {
+                showToast('No Gemini API key set. Please open Settings and paste one.', 'warning');
+            }, 500);
+        }
+        loadSupabase();
+    };
+
+    function loadSettings() {
+        try {
+            var saved = localStorage.getItem('taskflow-settings');
+            if (saved) {
+                var parsed = JSON.parse(saved);
+                settings = Object.assign(settings, parsed);
+            }
+            var savedCats = localStorage.getItem('taskflow-categories');
+            if (savedCats) {
+                var parsedCats = JSON.parse(savedCats);
+                categories = categories.filter(function(c) { return c.default; });
+                parsedCats.forEach(function(c) {
+                    if (!c.default) categories.push(c);
+                });
+            }
+            workingModel = localStorage.getItem('taskflow-working-model');
+
+            // load Gemini key if present
+            var savedKey = localStorage.getItem('geminiApiKey');
+            if (savedKey) {
+                GEMINI_API_KEY = savedKey;
+            } else if (PUBLIC_GEMINI_KEY && !GEMINI_API_KEY) {
+                // use fallback if there is a public key and none in storage
+                GEMINI_API_KEY = PUBLIC_GEMINI_KEY;
+            }
+        } catch (e) {}
+    }
+
+    function saveSettings() {
+        settings.defaultDuration = parseInt(document.getElementById('defaultDuration').value);
+        settings.defaultStartTime = document.getElementById('defaultStartTime').value;
+        settings.defaultEndTime = document.getElementById('defaultEndTime').value;
+
+        // store key
+        var key = document.getElementById('geminiKeyInput').value.trim();
+        if (key) {
+            localStorage.setItem('geminiApiKey', key);
+            GEMINI_API_KEY = key;
+        }
+
+        localStorage.setItem('taskflow-settings', JSON.stringify(settings));
+        localStorage.setItem('taskflow-categories', JSON.stringify(categories));
+        showToast('Settings saved', 'success');
+        closeModal('settingsModal');
+        populateCategorySelect();
+    }
+
+    function loadSupabase() {
+        var script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+        script.onload = initSupabase;
+        script.onerror = function() {
+            var script2 = document.createElement('script');
+            script2.src = 'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+            script2.onload = initSupabase;
+            script2.onerror = function() {
+                document.getElementById('loadingScreen').innerHTML = '<p style="color: var(--danger);">Failed to load. Please disable tracking prevention in your browser settings.</p>';
+            };
+            document.head.appendChild(script2);
+        };
+        document.head.appendChild(script);
+    }
+
+    function initSupabase() {
+        try {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                auth: {
+                    persistSession: true,
+                    autoRefreshToken: true,
+                    detectSessionInUrl: true,
+                    storageKey: 'taskflow-auth',
+                    storage: window.localStorage
+                }
+            });
+            checkAuth();
+        } catch (err) {
+            window.location.href = 'index.html';
+        }
+    }
+
+    function checkAuth() {
+        supabaseClient.auth.getSession().then(function(result) {
+            if (!result.data.session) {
+                window.location.href = 'index.html';
+                return;
+            }
+            currentUser = result.data.session.user;
+            var meta = currentUser.user_metadata || {};
+            document.getElementById('userEmail').textContent = currentUser.email;
+            document.getElementById('userName').textContent = meta.full_name || meta.name || 'User';
+            document.getElementById('userAvatar').textContent = (meta.full_name || meta.name || currentUser.email || 'U').charAt(0).toUpperCase();
+            document.getElementById('loadingScreen').style.display = 'none';
+            setupEventListeners();
+            populateCategorySelect();
+            loadTasks();
+        }).catch(function() {
+            window.location.href = 'index.html';
+        });
+
+        supabaseClient.auth.onAuthStateChange(function(event, session) {
+            if (event === 'SIGNED_OUT' || !session) {
+                window.location.href = 'index.html';
+            }
+        });
+    }
+
+    function populateCategorySelect() {
+        var select = document.getElementById('taskCategory');
+        select.innerHTML = categories.map(function(c) {
+            return '<option value="' + c.id + '">' + c.name + '</option>';
+        }).join('');
+    }
+
+    function renderCategoryList() {
+        var list = document.getElementById('categoryList');
+        list.innerHTML = categories.map(function(c) {
+            return '<div class="category-item"><div class="category-color" style="background:' + c.color + '"></div><span class="category-name">' + c.name + '</span>' + (c.default ? '<span class="category-default">Default</span>' : '<button class="btn btn-ghost btn-sm" onclick="deleteCategory(\'' + c.id + '\')">Remove</button>') + '</div>';
+        }).join('');
+    }
+
+    window.deleteCategory = function(id) {
+        categories = categories.filter(function(c) { return c.id !== id; });
+        localStorage.setItem('taskflow-categories', JSON.stringify(categories));
+        renderCategoryList();
+        populateCategorySelect();
+    };
+
+    function addCategory() {
+        var name = document.getElementById('newCategoryName').value.trim();
+        var color = document.getElementById('newCategoryColor').value;
+        if (!name) return;
+        var id = name.toLowerCase().replace(/\s+/g, '-');
+        if (categories.find(function(c) { return c.id === id; })) {
+            showToast('Category already exists', 'error');
+            return;
+        }
+        categories.push({ id: id, name: name, color: color, default: false });
+        localStorage.setItem('taskflow-categories', JSON.stringify(categories));
+        document.getElementById('newCategoryName').value = '';
+        renderCategoryList();
+        populateCategorySelect();
+    }
+
+    function setupTheme() {
+        var saved = localStorage.getItem('taskflow-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', saved);
+        updateThemeIcon(saved);
+    }
+
+    function updateThemeIcon(theme) {
+        var icon = document.getElementById('themeIcon');
+        if (theme === 'dark') {
+            icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+        } else {
+            icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+        }
+    }
+
+    function setupEventListeners() {
+        // Theme
+        document.getElementById('themeToggle').onclick = function() {
+            var current = document.documentElement.getAttribute('data-theme');
+            var next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('taskflow-theme', next);
+            updateThemeIcon(next);
+        };
+
+        // User menu
+        document.getElementById('userAvatar').onclick = function(e) {
+            e.stopPropagation();
+            document.getElementById('userDropdown').classList.toggle('active');
+        };
+        document.addEventListener('click', function() {
+            document.getElementById('userDropdown').classList.remove('active');
+        });
+
+        document.getElementById('logoutBtn').onclick = function() {
+            supabaseClient.auth.signOut();
+        };
+
+        // Settings
+        document.getElementById('settingsBtn').onclick = function() {
+            document.getElementById('defaultDuration').value = settings.defaultDuration;
+            document.getElementById('defaultStartTime').value = settings.defaultStartTime;
+            document.getElementById('defaultEndTime').value = settings.defaultEndTime;
+            document.getElementById('geminiKeyInput').value = GEMINI_API_KEY || PUBLIC_GEMINI_KEY || '';
+            renderCategoryList();
+            document.getElementById('settingsModal').classList.add('active');
+        };
+
+        document.getElementById('addCategoryBtn').onclick = addCategory;
+
+        // Quick add
+        document.getElementById('quickAddInput').onkeydown = function(e) {
+            if (e.key === 'Enter') quickAddTask();
+        };
+        document.getElementById('quickAddBtn').onclick = quickAddTask;
+        document.getElementById('fullAddBtn').onclick = function() { openTaskModal(); };
+
+        // Task form
+        document.getElementById('saveTaskBtn').onclick = saveTask;
+        document.getElementById('taskForm').onsubmit = function(e) { e.preventDefault(); saveTask(); };
+
+        // Filters
+        document.querySelectorAll('.filter-btn').forEach(function(btn) {
+            btn.onclick = function() {
+                document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                renderTasks();
+            };
+        });
+
+        // Schedule
+        document.getElementById('aiScheduleBtn').onclick = openScheduleModal;
+        document.getElementById('generateScheduleBtn').onclick = generateSchedule;
+        document.getElementById('backToSetupBtn').onclick = function() {
+            showTab('setup');
+        };
+
+        // Tabs
+        document.querySelectorAll('.tab').forEach(function(tab) {
+            tab.onclick = function() {
+                showTab(tab.dataset.tab);
+            };
+        });
+
+        // Modal close
+        document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+            overlay.onclick = function(e) {
+                if (e.target === overlay) overlay.classList.remove('active');
+            };
+        });
+
+        document.onkeydown = function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(function(m) {
+                    m.classList.remove('active');
+                });
+            }
+        };
+    }
+
+    function showTab(tabId) {
+        document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+        document.querySelector('.tab[data-tab="' + tabId + '"]').classList.add('active');
+        
+        if (tabId === 'setup') {
+            document.getElementById('setupTab').classList.remove('hidden');
+            document.getElementById('previewTab').classList.add('hidden');
+            document.getElementById('backToSetupBtn').classList.add('hidden');
+        } else {
+            document.getElementById('setupTab').classList.add('hidden');
+            document.getElementById('previewTab').classList.remove('hidden');
+            document.getElementById('backToSetupBtn').classList.remove('hidden');
+        }
+    }
+
+    function quickAddTask() {
+        var input = document.getElementById('quickAddInput');
+        var title = input.value.trim();
+        if (!title) return;
+
+        var taskData = {
+            user_id: currentUser.id,
+            title: title,
+            description: null,
+            due_date: new Date().toISOString().split('T')[0],
+            due_time: null,
+            duration_minutes: settings.defaultDuration,
+            priority: 'medium',
+            location: null,
+            category: 'work'
+        };
+
+        supabaseClient.from('tasks').insert([taskData]).then(function(result) {
+            if (result.error) throw result.error;
+            input.value = '';
+            showToast('Task added', 'success');
+            loadTasks();
+        }).catch(function(error) {
+            showToast('Failed to add task', 'error');
+        });
+    }
+
+    function loadTasks() {
+        supabaseClient.from('tasks').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false })
+        .then(function(result) {
+            if (result.error) throw result.error;
+            tasks = result.data || [];
+            updateStats();
+            renderTasks();
+        }).catch(function(error) {
+            showToast('Failed to load tasks', 'error');
+        });
+    }
+
+    function renderTasks() {
+        var container = document.getElementById('taskList');
+        var filtered = tasks.slice();
+        var today = new Date().toISOString().split('T')[0];
+
+        if (currentFilter === 'pending') filtered = tasks.filter(function(t) { return !t.completed; });
+        else if (currentFilter === 'completed') filtered = tasks.filter(function(t) { return t.completed; });
+        else if (currentFilter === 'today') filtered = tasks.filter(function(t) { return t.due_date === today; });
+        else if (currentFilter === 'high') filtered = tasks.filter(function(t) { return t.priority === 'high' && !t.completed; });
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg></div><h3>No tasks yet</h3><p>Add a task above to get started</p></div>';
+            return;
+        }
+
+        container.innerHTML = filtered.map(function(task) {
+            var cat = categories.find(function(c) { return c.id === task.category; }) || { name: task.category, color: '#71717a' };
+            return '<div class="task-card ' + (task.completed ? 'completed' : '') + '"><div class="task-checkbox ' + (task.completed ? 'checked' : '') + '" onclick="toggleTask(\'' + task.id + '\')">' + (task.completed ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>' : '') + '</div><div class="task-content"><div class="task-title">' + escapeHtml(task.title) + '</div>' + (task.description ? '<div class="task-description">' + escapeHtml(task.description) + '</div>' : '') + '<div class="task-meta">' + (task.due_date ? '<span class="task-tag">' + formatDate(task.due_date) + '</span>' : '') + (task.due_time ? '<span class="task-tag">' + formatTime(task.due_time) + '</span>' : '') + '<span class="task-tag">' + task.duration_minutes + ' min</span><span class="task-tag priority-' + task.priority + '">' + capitalize(task.priority) + '</span><span class="task-tag category" style="background: ' + cat.color + '20; color: ' + cat.color + '">' + cat.name + '</span>' + (task.location ? '<span class="task-tag">' + escapeHtml(task.location) + '</span>' : '') + '</div></div><div class="task-actions"><button class="task-action" onclick="openTaskModal(\'' + task.id + '\')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button class="task-action delete" onclick="deleteTask(\'' + task.id + '\')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div></div>';
+        }).join('');
+    }
+
+    window.openTaskModal = function(taskId) {
+        var form = document.getElementById('taskForm');
+        form.reset();
+        document.getElementById('taskId').value = '';
+
+        if (taskId) {
+            var task = tasks.find(function(t) { return t.id === taskId; });
+            if (task) {
+                document.getElementById('taskModalTitle').textContent = 'Edit Task';
+                document.getElementById('taskId').value = task.id;
+                document.getElementById('taskTitle').value = task.title;
+                document.getElementById('taskDescription').value = task.description || '';
+                document.getElementById('taskDueDate').value = task.due_date || '';
+                document.getElementById('taskDueTime').value = task.due_time || '';
+                document.getElementById('taskDuration').value = task.duration_minutes;
+                document.getElementById('taskPriority').value = task.priority;
+                document.getElementById('taskLocation').value = task.location || '';
+                document.getElementById('taskCategory').value = task.category;
+            }
+        } else {
+            document.getElementById('taskModalTitle').textContent = 'Add Task';
+            document.getElementById('taskDueDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('taskDuration').value = settings.defaultDuration;
+        }
+
+        document.getElementById('taskModal').classList.add('active');
+        document.getElementById('taskTitle').focus();
+    };
+
+    function saveTask() {
+        var id = document.getElementById('taskId').value;
+        var title = document.getElementById('taskTitle').value.trim();
+
+        if (!title) {
+            showToast('Please enter a task title', 'error');
+            return;
+        }
+
+        var taskData = {
+            user_id: currentUser.id,
+            title: title,
+            description: document.getElementById('taskDescription').value.trim() || null,
+            due_date: document.getElementById('taskDueDate').value || null,
+            due_time: document.getElementById('taskDueTime').value || null,
+            duration_minutes: parseInt(document.getElementById('taskDuration').value) || 30,
+            priority: document.getElementById('taskPriority').value,
+            location: document.getElementById('taskLocation').value.trim() || null,
+            category: document.getElementById('taskCategory').value
+        };
+
+        var btn = document.getElementById('saveTaskBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>';
+
+        var promise;
+        if (id) {
+            promise = supabaseClient.from('tasks').update(taskData).eq('id', id);
+        } else {
+            promise = supabaseClient.from('tasks').insert([taskData]);
+        }
+
+        promise.then(function(result) {
+            if (result.error) throw result.error;
+            showToast(id ? 'Task updated' : 'Task added', 'success');
+            closeModal('taskModal');
+            loadTasks();
+        }).catch(function(error) {
+            showToast('Failed to save: ' + error.message, 'error');
+        }).finally(function() {
+            btn.disabled = false;
+            btn.textContent = 'Save Task';
+        });
+    }
+
+    window.toggleTask = function(id) {
+        var task = tasks.find(function(t) { return t.id === id; });
+        if (!task) return;
+
+        supabaseClient.from('tasks').update({ completed: !task.completed }).eq('id', id)
+        .then(function(result) {
+            if (result.error) throw result.error;
+            loadTasks();
+        }).catch(function() {
+            showToast('Failed to update', 'error');
+        });
+    };
+
+    window.deleteTask = function(id) {
+        if (!confirm('Delete this task?')) return;
+
+        supabaseClient.from('tasks').delete().eq('id', id)
+        .then(function(result) {
+            if (result.error) throw result.error;
+            showToast('Task deleted', 'success');
+            loadTasks();
+        }).catch(function() {
+            showToast('Failed to delete', 'error');
+        });
+    };
+
+    function updateStats() {
+        var total = tasks.length;
+        var completed = tasks.filter(function(t) { return t.completed; }).length;
+        var pending = total - completed;
+        var totalMinutes = tasks.filter(function(t) { return !t.completed; }).reduce(function(sum, t) { return sum + (t.duration_minutes || 0); }, 0);
+
+        document.getElementById('statTotal').textContent = total;
+        document.getElementById('statPending').textContent = pending;
+        document.getElementById('statCompleted').textContent = completed;
+
+        var hours = Math.floor(totalMinutes / 60);
+        var mins = totalMinutes % 60;
+        document.getElementById('statTime').textContent = hours > 0 ? hours + 'h ' + mins + 'm' : mins + 'm';
+    }
+
+    function openScheduleModal() {
+        var pendingTasks = tasks.filter(function(t) { return !t.completed; });
+
+        if (pendingTasks.length === 0) {
+            showToast('No pending tasks to schedule', 'error');
+            return;
+        }
+
+        document.getElementById('scheduleStart').value = settings.defaultStartTime;
+        document.getElementById('scheduleEnd').value = settings.defaultEndTime;
+
+        document.getElementById('scheduleTaskSelect').innerHTML = pendingTasks.map(function(task) {
+            var cat = categories.find(function(c) { return c.id === task.category; }) || { name: task.category };
+            return '<label class="schedule-task-item"><input type="checkbox" value="' + task.id + '" checked><div class="schedule-task-info"><div class="schedule-task-name">' + escapeHtml(task.title) + '</div><div class="schedule-task-meta">' + task.duration_minutes + ' min - ' + cat.name + ' - ' + capitalize(task.priority) + '</div></div></label>';
+        }).join('');
+
+        showTab('setup');
+        document.getElementById('scheduleModal').classList.add('active');
+    }
+
+    function generateSchedule() {
+        var checkboxes = document.querySelectorAll('#scheduleTaskSelect input:checked');
+        var selectedIds = [];
+        checkboxes.forEach(function(cb) { selectedIds.push(cb.value); });
+
+        if (selectedIds.length === 0) {
+            showToast('Select at least one task', 'error');
+            return;
+        }
+
+        var selectedTasks = tasks.filter(function(t) { return selectedIds.indexOf(t.id) !== -1; });
+
+        var btn = document.getElementById('generateScheduleBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Finding best model...';
+
+        // Try to call the API with fallback models
+        tryGeminiModels(selectedTasks, 0, btn, '');
+    }
+
+    function tryGeminiModels(selectedTasks, modelIndex, btn, lastErrorMsg) {
+        lastErrorMsg = lastErrorMsg || '';
+        // If we have a working model cached, try it first
+        if (workingModel && modelIndex === 0) {
+            btn.innerHTML = '<span class="spinner"></span> Generating with ' + workingModel + '...';
+            // debug info: show partial key in console
+            var keySnippet = GEMINI_API_KEY ? GEMINI_API_KEY.slice(0,4) + '...' + GEMINI_API_KEY.slice(-4) : '(none)';
+            console.log('calling Gemini with key', keySnippet, 'model', workingModel);
+
+        // log which key is in use (hide most of it)
+        var keySnippet = GEMINI_API_KEY ? GEMINI_API_KEY.slice(0,4) + '...' + GEMINI_API_KEY.slice(-4) : '(none)';
+        console.log('using Gemini key', keySnippet, 'model', workingModel);
+            callGeminiWithModel(selectedTasks, workingModel)
+                .then(function(schedule) {
+                    generatedSchedule = schedule;
+                    displaySchedule(schedule);
+                    showTab('preview');
+                    btn.disabled = false;
+                    btn.textContent = 'Generate My Schedule';
+                })
+                .catch(function(error) {
+                    console.log('Cached model failed, trying others...');
+                    workingModel = null;
+                    localStorage.removeItem('taskflow-working-model');
+                    tryGeminiModels(selectedTasks, 0, btn);
+                });
+            return;
+        }
+
+        if (modelIndex >= GEMINI_MODELS.length) {
+            btn.disabled = false;
+            btn.textContent = 'Generate My Schedule';
+            var msg = 'All AI models failed. Please check your API key.';
+            if (lastErrorMsg) msg += ' (' + lastErrorMsg + ')';
+            showToast(msg, 'error');
+            console.warn('models exhausted, last error:', lastErrorMsg);
+            return;
+        }
+
+        var model = GEMINI_MODELS[modelIndex];
+        btn.innerHTML = '<span class="spinner"></span> Trying ' + model + '...';
+
+        callGeminiWithModel(selectedTasks, model)
+            .then(function(schedule) {
+                // Success! Cache this working model
+                workingModel = model;
+                localStorage.setItem('taskflow-working-model', model);
+                console.log('Working model found:', model);
+                
+                generatedSchedule = schedule;
+                displaySchedule(schedule);
+                showTab('preview');
+                btn.disabled = false;
+                btn.textContent = 'Generate My Schedule';
+            })
+            .catch(function(error) {
+                console.log('Model ' + model + ' failed:', error.message);
+                lastErrorMsg = error.message;
+                // Try next model
+                tryGeminiModels(selectedTasks, modelIndex + 1, btn, lastErrorMsg);
+            });
+    }
+
+    function callGeminiWithModel(selectedTasks, model) {
+        if (!GEMINI_API_KEY) {
+            // if there's a public key defined, use it
+            if (PUBLIC_GEMINI_KEY) {
+                GEMINI_API_KEY = PUBLIC_GEMINI_KEY;
+            }
+        }
+        var keySnippet = GEMINI_API_KEY ? GEMINI_API_KEY.slice(0,4) + '...' + GEMINI_API_KEY.slice(-4) : '(no key)';
+        console.log('[debug] callGeminiWithModel, model:', model, ', key:', keySnippet);
+
+        var taskList = selectedTasks.map(function(t) {
+            return '- "' + t.title + '": ' + t.duration_minutes + ' min, Priority: ' + t.priority + ', Category: ' + t.category + (t.due_date ? ', Due: ' + t.due_date : '') + (t.location ? ', At: ' + t.location : '');
+        }).join('\n');
+
+        var workStyles = {
+            'pomodoro': 'Pomodoro: 25 min work, 5 min break, longer break after 4 sessions',
+            'deep': 'Deep Focus: 50 min work, 10 min break',
+            'sprint': 'Sprint: 90 min work, 20 min break',
+            'flexible': 'Flexible: AI decides optimal breaks based on task types'
+        };
+
+        var prompt = 'You are an expert productivity coach. Create an optimal daily schedule.\n\nTASKS:\n' + taskList + '\n\nCONSTRAINTS:\n- Working hours: ' + document.getElementById('scheduleStart').value + ' to ' + document.getElementById('scheduleEnd').value + '\n- Work style: ' + workStyles[document.getElementById('workStyle').value] + '\n- Energy level: ' + document.getElementById('energyLevel').value + '\n- Buffer time: ' + document.getElementById('freeTime').value + ' minutes\n\nRULES:\n1. High priority tasks go during peak energy times (usually morning)\n2. Group similar categories together\n3. Include breaks per work style\n4. Start with easier tasks if energy is low\n5. Leave buffer time unscheduled\n\nReturn ONLY valid JSON with this exact structure (no markdown, no code blocks, just raw JSON):\n{"schedule":[{"time":"09:00","endTime":"09:30","duration":30,"type":"task","title":"Task name","tip":"Optional tip"}],"summary":"Brief strategy","tips":["Tip 1","Tip 2","Tip 3"],"totalWorkTime":120,"totalBreakTime":30,"freeTimeKept":30}';
+
+        return fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + GEMINI_API_KEY, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { 
+                    temperature: 0.7, 
+                    maxOutputTokens: 2048,
+                    topP: 0.95,
+                    topK: 40
+                }
+            })
+        }).then(function(response) {
+            if (!response.ok) {
+                return response.json().then(function(err) {
+                    var msg = err.error?.message || 'API error: ' + response.status;
+                    // Common authentication/key issues
+                    if (response.status === 401 || response.status === 403 || msg.toLowerCase().includes('key')) {
+                        msg += ' (check your Gemini API key and project permissions)';
+                    }
+                    throw new Error(msg);
+                });
+            }
+            return response.json();
+        }).then(function(data) {
+            if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+                throw new Error('Empty response from AI');
+            }
+            var text = data.candidates[0].content.parts[0].text;
+            // Clean up any markdown code blocks
+            text = text.trim();
+            if (text.startsWith('```')) {
+                text = text.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+            }
+            // Try to find JSON in the response
+            var jsonMatch = text.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                text = jsonMatch[0];
+            }
+            return JSON.parse(text);
+        });
+    }
+
+    function displaySchedule(schedule) {
+        var container = document.getElementById('scheduleResult');
+        container.innerHTML = schedule.schedule.map(function(item, idx) {
+            return '<div class="schedule-block ' + (item.type === 'break' ? 'break' : '') + '"><div class="schedule-block-time"><input type="time" value="' + item.time + '" onchange="updateScheduleTime(' + idx + ', this.value)"></div><div class="schedule-block-content"><div class="schedule-block-title">' + (item.type === 'break' ? 'Break: ' : '') + item.title + '</div><div class="schedule-block-duration">' + item.duration + ' minutes (until ' + item.endTime + ')</div>' + (item.tip ? '<div class="schedule-block-tip">' + item.tip + '</div>' : '') + '</div><div class="schedule-block-indicator"></div></div>';
+        }).join('');
+
+        document.getElementById('scheduleSummary').innerHTML = '<div class="schedule-summary-item"><span>Work Time</span><strong>' + schedule.totalWorkTime + ' min</strong></div><div class="schedule-summary-item"><span>Break Time</span><strong>' + schedule.totalBreakTime + ' min</strong></div><div class="schedule-summary-item"><span>Buffer</span><strong>' + schedule.freeTimeKept + ' min</strong></div>' + (workingModel ? '<div class="schedule-summary-item"><span>Model</span><strong>' + workingModel + '</strong></div>' : '');
+
+        document.getElementById('scheduleTips').innerHTML = (schedule.tips || []).map(function(tip) {
+            return '<li>' + tip + '</li>';
+        }).join('');
+    }
+
+    window.updateScheduleTime = function(idx, newTime) {
+        if (generatedSchedule && generatedSchedule.schedule[idx]) {
+            generatedSchedule.schedule[idx].time = newTime;
+            var startParts = newTime.split(':');
+            var startMinutes = parseInt(startParts[0]) * 60 + parseInt(startParts[1]);
+            var endMinutes = startMinutes + generatedSchedule.schedule[idx].duration;
+            var endHours = Math.floor(endMinutes / 60);
+            var endMins = endMinutes % 60;
+            generatedSchedule.schedule[idx].endTime = (endHours < 10 ? '0' : '') + endHours + ':' + (endMins < 10 ? '0' : '') + endMins;
+            // Update the display
+            displaySchedule(generatedSchedule);
+        }
+    };
+
+    window.closeModal = function(id) {
+        document.getElementById(id).classList.remove('active');
+    };
+
+    // Test available models (can be called from console for debugging)
+    window.testGeminiModels = function() {
+        console.log('Testing available Gemini models...');
+        var testPrompt = 'Say "hello" in JSON format: {"message": "hello"}';
+        
+        GEMINI_MODELS.forEach(function(model) {
+            fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + GEMINI_API_KEY, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: testPrompt }] }]
+                })
+            }).then(function(response) {
+                if (response.ok) {
+                    console.log('✓ ' + model + ' - WORKS');
+                } else {
+                    response.json().then(function(err) {
+                        console.log('✗ ' + model + ' - ' + (err.error?.message || 'Failed'));
+                    });
+                }
+            }).catch(function(err) {
+                console.log('✗ ' + model + ' - Network error');
+            });
+        });
+    };
+
+    function showToast(message, type) {
+        var container = document.getElementById('toastContainer');
+        var toast = document.createElement('div');
+        toast.className = 'toast ' + type;
+        toast.innerHTML = (type === 'success' ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>') + message;
+        container.appendChild(toast);
+        setTimeout(function() {
+            toast.style.opacity = '0';
+            setTimeout(function() { toast.remove(); }, 300);
+        }, 3000);
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        var date = new Date(dateStr + 'T00:00:00');
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        var tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        if (date.getTime() === today.getTime()) return 'Today';
+        if (date.getTime() === tomorrow.getTime()) return 'Tomorrow';
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    function formatTime(timeStr) {
+        if (!timeStr) return '';
+        var parts = timeStr.split(':');
+        var h = parseInt(parts[0]);
+        return (h % 12 || 12) + ':' + parts[1] + ' ' + (h >= 12 ? 'PM' : 'AM');
+    }
+
+    function capitalize(str) {
+        return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+    }
+</script>
+</body>
+</html>
