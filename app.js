@@ -38,8 +38,17 @@ let currentFilter = 'all';
 // INITIALIZATION
 // ============================================
 document.addEventListener('DOMContentLoaded', async () => {
+    migrateTaskflowKeys();
     await checkAuth();
 });
+
+// Migrate any old taskflow-* localStorage keys to velso-* keys
+function migrateTaskflowKeys(){
+    try{
+        var keys=[];for(var i=0;i<localStorage.length;i++)keys.push(localStorage.key(i));
+        keys.forEach(function(k){if(!k) return; if(k.indexOf('taskflow-')===0){var nk=k.replace(/^taskflow-/,'velso-');if(localStorage.getItem(nk)===null) localStorage.setItem(nk, localStorage.getItem(k));}});
+    }catch(e){console.warn('Migration failed',e);}    
+}
 
 async function checkAuth() {
     try {
@@ -76,7 +85,7 @@ async function checkAuth() {
 // THEME
 // ============================================
 function initTheme() {
-    const saved = localStorage.getItem('taskflow-theme') || 'dark';
+    const saved = localStorage.getItem('velso-theme') || 'dark';
     document.documentElement.setAttribute('data-theme', saved);
     updateThemeIcon(saved);
 }
@@ -85,7 +94,7 @@ function toggleTheme() {
     const current = document.documentElement.getAttribute('data-theme');
     const next = current === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('taskflow-theme', next);
+    localStorage.setItem('velso-theme', next);
     updateThemeIcon(next);
 }
 

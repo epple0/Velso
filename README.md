@@ -1,2 +1,2 @@
-# TaskForce
-Todo List - Lightweight, saves, easy, and has mobile app
+# Velso
+Velso — Smart task scheduling with AI-powered planning. Lightweight and focused on productivity.
