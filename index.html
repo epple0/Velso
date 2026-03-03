@@ -53,6 +53,27 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
 
+        /* custom scrollbar to match theme */
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--border);
+            border-radius: var(--radius);
+            border: 3px solid var(--bg);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: var(--border-light);
+        }
+        html {
+            scrollbar-color: var(--border) var(--bg);
+            scrollbar-width: thin;
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg);

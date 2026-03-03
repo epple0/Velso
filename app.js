@@ -8,7 +8,7 @@ const CONFIG = {
 
 // Gemini API - Get from aistudio.google.com. if you want a shared key for all users, put it below
     GEMINI_API_KEY: localStorage.getItem('geminiApiKey') || '',
-    GEMINI_MODEL: 'gemini-3-flash-preview'
+    GEMINI_MODEL: 'gemini-2.5-flash-lite'
 };
 // optional: public/shared key fallback
 const PUBLIC_GEMINI_KEY = '';
@@ -62,6 +62,8 @@ async function checkAuth() {
         });
         
         initTheme();
+        // populate categories dropdown now that settings are loaded
+        if (typeof populateCategorySelect === 'function') populateCategorySelect();
         setupEventListeners();
         await loadTasks();
     } catch (err) {
@@ -232,6 +234,8 @@ function renderTasks() {
 }
 
 function openTaskModal(taskId = null) {
+    // ensure we always have the latest categories whenever a task form is opened
+    if (typeof populateCategorySelect === 'function') populateCategorySelect();
     const modal = document.getElementById('taskModal');
     const form = document.getElementById('taskForm');
     form.reset();
@@ -278,7 +282,8 @@ async function saveTask() {
         duration_minutes: parseInt(document.getElementById('taskDuration').value) || 30,
         priority: document.getElementById('taskPriority').value,
         location: document.getElementById('taskLocation').value.trim() || null,
-        category: document.getElementById('taskCategory').value
+        // if for some reason the select is empty, fall back to the first category id
+        category: document.getElementById('taskCategory').value || (categories[0] && categories[0].id) || null
     };
 
     const btn = document.getElementById('saveTaskBtn');
@@ -450,6 +455,7 @@ RULES:
 3. Include breaks per work style
 4. Leave buffer time unscheduled
 5. Account for context switching
+6. If any selected task belongs to the "study" category, add an extra "Review/Consolidate" block (15–30 min) toward the end of the day to help retain learning.
 
 OUTPUT (JSON only, no markdown):
 {
