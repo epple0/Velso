@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(find /d/Code/Velso -name * -type f -mmin -60)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm)",
+      "Bash(npx create-next-app@latest velso-app --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm)",
+      "Bash(rm -rf velso-temp)",
+      "Bash(rm -rf velso-app)",
+      "Bash(npm install:*)",
+      "Bash(npx next:*)",
+      "Bash(npm run:*)",
+      "Bash(gh auth:*)",
+      "Bash(git:*)"
+    ]
+  }
+}
